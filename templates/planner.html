@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FocusYou – Planner</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+  
+<link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <script>
+    (function() {
+      const theme = localStorage.getItem('fy_theme') || 'default';
+      if (theme !== 'default') {
+        document.documentElement.className = 'theme-' + theme;
+      }
+    })();
+  </script>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">🐰</span>
+    <span class="logo-text">Focus<span class="logo-accent">You</span></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="/dashboard" class="nav-link"><span class="nav-icon">🏠</span><span>Dashboard</span></a></li>
+    <li><a href="/chatbot"   class="nav-link"><span class="nav-icon">🤖</span><span>AI Chatbot</span></a></li>
+    <li><a href="/timer"     class="nav-link"><span class="nav-icon">⏱️</span><span>Study Timer</span></a></li>
+    <li><a href="/planner"   class="nav-link active"><span class="nav-icon">📅</span><span>Planner</span></a></li>
+    <li><a href="/progress"  class="nav-link"><span class="nav-icon">📊</span><span>Progress</span></a></li>
+
+    <li><a href="/settings"  class="nav-link"><span class="nav-icon">⚙️</span><span>Settings</span></a></li>
+  </ul>
+  <div class="sidebar-footer">
+    <button class="logout-btn" onclick="window.location='/'">🚪 Logout</button>
+  </div>
+</nav>
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+
+<main class="main-content">
+  <div class="page-header">
+    <div class="page-title">📅 Study Planner</div>
+    <div class="page-sub">To-Do List · Syllabus Analyser · AI Study Schedule · Exam Countdown</div>
+  </div>
+
+  <!-- ── XP & STREAK BAR ── -->
+  <div class="xp-bar-wrap">
+    <div class="xp-stat">
+      <span class="streak-fire">🔥</span>
+      <div>
+        <div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">Streak</div>
+        <span class="xp-stat-val" id="plannerStreak">0</span>
+        <span style="font-size:.75rem;color:var(--text-muted);font-weight:700;"> days</span>
+      </div>
+    </div>
+    <div class="xp-stat">
+      <span style="font-size:1.4rem;">⭐</span>
+      <div>
+        <div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">XP Points</div>
+        <span class="xp-stat-val" id="plannerXP">0</span>
+      </div>
+    </div>
+    <div class="xp-progress-wrap">
+      <div class="xp-progress-label">Level: <span id="plannerGrade">Seedling 🌱</span></div>
+      <div class="xp-progress-bar"><div class="xp-progress-fill" id="plannerXPBar" style="width:0%"></div></div>
+      <div style="font-size:.68rem;color:var(--text-muted);font-weight:700;margin-top:3px;" id="plannerXPNext"></div>
+    </div>
+    <div class="xp-stat">
+      <span style="font-size:1.4rem;">✅</span>
+      <div>
+        <div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;">Tasks Done</div>
+        <span class="xp-stat-val" id="plannerDone">0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('todo',this)">✅ Daily To-Do</button>
+    <button class="tab" onclick="switchTab('calendar',this)">🗓️ Calendar</button>
+    <button class="tab" onclick="switchTab('syllabus',this)">📚 Syllabus & AI Plan</button>
+    <button class="tab" onclick="switchTab('exams',this)">🎯 Exam Countdown</button>
+  </div>
+
+  <!-- ══════════ TO-DO TAB ══════════ -->
+  <div id="tab-todo">
+    <div class="grid-2">
+
+      <!-- Add Task -->
+      <div class="card">
+        <div class="section-title">➕ Add Task</div>
+        <div class="form-group">
+          <label class="form-label">Task Name</label>
+          <input type="text" class="input" id="todoText" placeholder="e.g. Complete Chapter 3 notes" onkeydown="if(event.key==='Enter')addTodo()"/>
+        </div>
+        <div class="grid-3" style="margin-bottom:14px;">
+          <div>
+            <label class="form-label">Date</label>
+            <input type="date" class="input" id="todoDate"/>
+          </div>
+          <div>
+            <label class="form-label">Time</label>
+            <input type="time" class="input" id="todoTime"/>
+          </div>
+          <div>
+            <label class="form-label">Priority</label>
+            <select class="input" id="todoPriority">
+              <option value="high">🔴 High</option>
+              <option value="med" selected>🟡 Medium</option>
+              <option value="low">🟢 Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="input" id="todoCategory">
+            <option value="study">📚 Study</option>
+            <option value="revision">🔁 Revision</option>
+            <option value="exam">🎯 Exam Prep</option>
+            <option value="break">☕ Break/Rest</option>
+            <option value="other">📌 Other</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="addTodo()" style="width:100%;">➕ Add Task</button>
+
+        <!-- Daily Summary -->
+        <div style="margin-top:18px;padding:14px;background:linear-gradient(135deg,var(--purple-light),var(--pink-light));border-radius:var(--radius-sm);">
+          <div class="section-title" style="margin-bottom:8px;font-size:.95rem;">📊 Today's Summary</div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.82rem;font-weight:700;color:var(--text-soft);">
+            <span>Total: <strong id="sumTotal">0</strong></span>
+            <span>✅ Done: <strong id="sumDone">0</strong></span>
+            <span>⏳ Left: <strong id="sumLeft">0</strong></span>
+            <span>🎯 Rate: <strong id="sumRate">—</strong></span>
+          </div>
+          <div style="margin-top:8px;background:var(--border);border-radius:99px;height:8px;overflow:hidden;">
+            <div id="sumBar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,var(--purple-deep),var(--pink-deep));width:0%;transition:width .5s;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task List -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div class="section-title" style="margin:0;">📋 Tasks — <span id="listDateLabel">Today</span></div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="date" class="input btn-sm" id="filterDate" onchange="renderTodos()" style="width:auto;padding:6px 10px;font-size:.78rem;"/>
+            <button class="btn btn-danger btn-sm" onclick="clearDone()">🗑 Clear Done</button>
+          </div>
+        </div>
+        <div class="todo-list" id="todoList"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════ CALENDAR TAB ══════════ -->
+  <div id="tab-calendar" style="display:none;">
+    <div class="grid-2">
+      <div class="card">
+        <div class="cal-wrap">
+          <div class="cal-header">
+            <button class="cal-nav" onclick="calNav(-1)">‹</button>
+            <div class="cal-month" id="calMonth">June 2025</div>
+            <button class="cal-nav" onclick="calNav(+1)">›</button>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+
+        <!-- Legend -->
+        <div style="display:flex;gap:14px;margin-top:16px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:5px;font-size:.75rem;font-weight:700;color:var(--text-soft);">
+            <div style="width:10px;height:10px;border-radius:50%;background:var(--pink-deep);"></div> Exam
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:.75rem;font-weight:700;color:var(--text-soft);">
+            <div style="width:10px;height:10px;border-radius:50%;background:var(--purple-deep);"></div> Tasks
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:.75rem;font-weight:700;color:var(--text-soft);">
+            <div style="width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,var(--purple-deep),var(--pink-deep));"></div> Today
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected Day Detail -->
+      <div class="card">
+        <div class="section-title">📌 <span id="selectedDayLabel">Select a day</span></div>
+        <div id="dayDetail">
+          <div class="empty-state"><div class="es-icon">👆</div><p>Click a date to see tasks & events</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SYLLABUS TAB ══════════ -->
+  <div id="tab-syllabus" style="display:none;">
+    <div class="grid-2">
+
+      <!-- Left: Upload + Topics -->
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="card">
+          <div class="section-title">📤 Upload Syllabus</div>
+          <div class="upload-zone" onclick="document.getElementById('syllabusFile').click()">
+            <input type="file" id="syllabusFile" accept=".txt,.pdf,.docx" onchange="handleSyllabusUpload(this)"/>
+            <div class="uz-icon">📄</div>
+            <div class="uz-text">Click to upload syllabus</div>
+            <div class="uz-sub">Supports .txt, .pdf, .docx — or paste topics below</div>
+          </div>
+          <div style="margin-top:12px;">
+            <label class="form-label">Or type/paste topics (one per line)</label>
+            <textarea class="input" id="syllabusText" rows="5" placeholder="Chapter 1: Introduction&#10;Chapter 2: Data Structures&#10;Chapter 3: Algorithms&#10;Chapter 4: Trees & Graphs&#10;..." style="resize:vertical;line-height:1.6;"></textarea>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="parseSyllabus()" style="margin-top:10px;width:100%;">📋 Parse Topics</button>
+        </div>
+
+        <div class="card">
+          <div class="section-title">🎯 Exam Details</div>
+          <div class="form-group">
+            <label class="form-label">Subject / Exam Name</label>
+            <input type="text" class="input" id="examSubject" placeholder="e.g. Data Structures Final Exam"/>
+          </div>
+          <div class="grid-3">
+            <div>
+              <label class="form-label">Exam Date</label>
+              <input type="date" class="input" id="examDateInput"/>
+            </div>
+            <div>
+              <label class="form-label">Daily Study (hrs)</label>
+              <input type="number" class="input" id="dailyHours" value="4" min="1" max="12"/>
+            </div>
+            <div>
+              <label class="form-label">Start From</label>
+              <input type="date" class="input" id="startDate"/>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="generateAIPlan()" id="generateBtn" style="width:100%;margin-top:4px;">🤖 Generate AI Study Plan</button>
+        </div>
+      </div>
+
+      <!-- Right: Topics + AI Plan -->
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div class="section-title" style="margin:0;">📚 Topics (<span id="topicCount">0</span>)</div>
+            <button class="btn btn-sm btn-outline" onclick="clearTopics()">🗑 Clear</button>
+          </div>
+          <div id="topicsList" style="min-height:60px;">
+            <div class="empty-state"><div class="es-icon">📝</div><p>Parse your syllabus to see topics here</p></div>
+          </div>
+        </div>
+
+        <div class="card" id="aiPlanCard">
+          <div class="section-title">🤖 AI Study Schedule</div>
+          <div id="aiPlanOutput">
+            <div class="empty-state"><div class="es-icon">🗓️</div><p>Add topics + exam date, then generate your plan!</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ EXAM COUNTDOWN TAB ══════════ -->
+  <div id="tab-exams" style="display:none;">
+    <div class="grid-2">
+      <div class="card">
+        <div class="section-title">➕ Add Exam</div>
+        <div class="form-group">
+          <label class="form-label">Subject Name</label>
+          <input type="text" class="input" id="examName" placeholder="e.g. Mathematics Paper 1"/>
+        </div>
+        <div class="grid-3">
+          <div>
+            <label class="form-label">Exam Date</label>
+            <input type="date" class="input" id="examDate"/>
+          </div>
+          <div>
+            <label class="form-label">Exam Time</label>
+            <input type="time" class="input" id="examTime" value="09:00"/>
+          </div>
+          <div>
+            <label class="form-label">Syllabus %</label>
+            <input type="number" class="input" id="examCoverage" value="0" min="0" max="100"/>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addExam()" style="width:100%;margin-top:4px;">📌 Add Exam</button>
+      </div>
+
+      <div class="card">
+        <div class="section-title">⏰ Upcoming Exams</div>
+        <div id="examList">
+          <div class="empty-state"><div class="es-icon">🎯</div><p>Add your exams to start the countdown!</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Urgency banner -->
+    <div id="urgencyBanner" style="display:none;margin-top:20px;background:linear-gradient(135deg,#FFE0EA,#FFD6A5);border-radius:var(--radius);padding:20px 24px;border:1.5px solid var(--pink);">
+      <div style="font-family:var(--font-brand);font-size:1.1rem;color:#c0392b;margin-bottom:6px;">🚨 Urgent — Exam Soon!</div>
+      <div id="urgencyText" style="font-size:.88rem;font-weight:600;color:var(--text-soft);line-height:1.7;"></div>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast-container" id="toastContainer"></div>
+
+
+<script src="{{ url_for('static', filename='fy_stats.js') }}?v=1.0.4"></script>
+<script src="{{ url_for('static', filename='planner.js') }}?v=1.0.4"></script>
+
+{% include 'ai_monitor.html' %}
+</body>
+</html>

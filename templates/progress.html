@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FocusYou – Progress Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <script>
+    (function() {
+      const theme = localStorage.getItem('fy_theme') || 'default';
+      if (theme !== 'default') {
+        document.documentElement.className = 'theme-' + theme;
+      }
+    })();
+  </script>
+</head>
+<body>
+
+<script>
+  const USERNAME = "{{ user }}";
+</script>
+
+<!-- ── SIDEBAR ── -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">🐰</span>
+    <span class="logo-text">Focus<span class="logo-accent">You</span></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="/dashboard" class="nav-link"><span class="nav-icon">🏠</span><span>Dashboard</span></a></li>
+    <li><a href="/chatbot"   class="nav-link"><span class="nav-icon">🤖</span><span>AI Chatbot</span></a></li>
+    <li><a href="/timer"     class="nav-link"><span class="nav-icon">⏱️</span><span>Study Timer</span></a></li>
+    <li><a href="/planner"   class="nav-link"><span class="nav-icon">📅</span><span>Planner</span></a></li>
+    <li><a href="/progress"  class="nav-link active"><span class="nav-icon">📊</span><span>Progress</span></a></li>
+    <li><a href="/settings"  class="nav-link"><span class="nav-icon">⚙️</span><span>Settings</span></a></li>
+  </ul>
+  <div class="sidebar-footer">
+    <button class="logout-btn" onclick="window.location='/'">🚪 Logout</button>
+  </div>
+</nav>
+
+<main class="main-content">
+  <div class="page-header">
+    <div>
+      <div class="page-title">📈 Analytics & Progress</div>
+      <div class="page-subtitle">Track your growth, stay motivated, and conquer your goals!</div>
+    </div>
+    <div style="font-size:3rem;animation:bunnyFloat 3s infinite;">🐰</div>
+  </div>
+
+  <!-- ROW 1: AI Insights -->
+  <div class="grid-1">
+    <div class="card ai-insights">
+      <div class="section-title" style="color:var(--purple-deep);">✨ AI Performance Insights</div>
+      <div id="aiInsightsContainer">
+        <div class="ai-bubble">Thinking... Analyzing your study patterns... ⏳</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Focus Score & Stats Overview -->
+  <div class="grid-4">
+    <div class="card" style="text-align:center;">
+      <div class="section-title" style="justify-content:center;">🧠 Focus Score</div>
+      <div class="focus-score" id="focusScoreVal">0</div>
+      <div class="stat-sub" id="focusScoreLbl">Calculating...</div>
+    </div>
+    <div class="card">
+      <div class="section-title">⏱️ Study Hours</div>
+      <div class="prog-label"><span>Today</span><span id="shToday">0 hrs</span></div>
+      <div class="prog-bar-wrap"><div class="prog-bar-fill bg-gradient-mint" id="shTodayBar" style="width:0%"></div></div>
+      <div class="prog-label"><span>This Week</span><span id="shWeek">0 hrs</span></div>
+      <div class="prog-bar-wrap"><div class="prog-bar-fill bg-gradient-mint" id="shWeekBar" style="width:0%"></div></div>
+    </div>
+    <div class="card">
+      <div class="section-title">🔥 Streaks</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div class="stat-sub">Current Streak</div>
+        <div class="stat-val" style="font-size:1.5rem;color:#e74c3c;" id="stkCur">0 Days 🔥</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="stat-sub">Best Streak</div>
+        <div class="stat-val" style="font-size:1.5rem;color:#f39c12;" id="stkBest">0 Days 🏆</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">✅ Task Completion</div>
+      <div style="text-align:center;margin-bottom:8px;">
+        <div class="stat-val" id="taskRate">0%</div>
+        <div class="stat-sub">Completion Rate</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.85rem;font-weight:700;color:var(--text-soft);">
+        <span>Created: <span id="taskTotal">0</span></span>
+        <span>Done: <span id="taskDone">0</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: Weekly Chart + Productivity Summary -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-title">📊 Weekly Performance (Hours)</div>
+      <div style="height:250px;width:100%;">
+        <canvas id="weeklyChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Replaced "Today's Goal Completion" with Productivity Summary -->
+    <div class="card">
+      <div class="section-title">⚡ Productivity Summary</div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--purple-light);border-radius:var(--radius-sm);border:1.5px solid var(--purple);">
+          <span style="font-weight:700;font-size:.9rem;">⭐ Total XP Earned</span>
+          <span style="font-family:var(--font-brand);font-size:1.2rem;color:var(--purple-deep);" id="sumXP">0</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--pink-light);border-radius:var(--radius-sm);border:1.5px solid var(--pink);">
+          <span style="font-weight:700;font-size:.9rem;">🔥 Study Streak</span>
+          <span style="font-family:var(--font-brand);font-size:1.2rem;color:var(--pink-deep);" id="sumStreak">0 days</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--mint-light);border-radius:var(--radius-sm);border:1.5px solid var(--mint);">
+          <span style="font-weight:700;font-size:.9rem;">✅ Tasks Completed</span>
+          <span style="font-family:var(--font-brand);font-size:1.2rem;color:#1E7A52;" id="sumTasks">0</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--yellow);border-radius:var(--radius-sm);border:1.5px solid #FFD96A;">
+          <span style="font-weight:700;font-size:.9rem;">⏱️ Total Study Time</span>
+          <span style="font-family:var(--font-brand);font-size:1.2rem;color:#7A5C00;" id="sumHours">0 hrs</span>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;padding:12px 14px;background:linear-gradient(135deg,var(--purple-light),var(--pink-light));border-radius:var(--radius-sm);border:1.5px solid var(--purple);font-size:.82rem;font-weight:700;color:var(--text-soft);line-height:1.6;" id="productivityTip">
+        💡 Keep going — consistency is your superpower!
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 4: XP & Badges -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-title">⭐ XP & Level Progress</div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+        <div class="badge" style="border-color:var(--yellow);box-shadow:0 0 15px rgba(243,156,18,0.4);" id="xpLvlIcon">🌱</div>
+        <div>
+          <div style="font-family:var(--font-brand);font-size:1.4rem;color:var(--text);" id="xpLvlName">Level 1</div>
+          <div class="stat-sub">XP: <span id="xpCur">0</span> / <span id="xpNext">100</span></div>
+        </div>
+      </div>
+      <div class="prog-bar-wrap" style="height:16px;"><div class="prog-bar-fill bg-gradient-yellow" id="xpBar" style="width:0%"></div></div>
+      <div style="margin-top:20px;font-size:.8rem;font-weight:700;color:var(--text-soft);border-top:1.5px solid var(--border);padding-top:10px;">
+        <strong>Reward System:</strong> Level 1 (100) → Level 2 (300) → Level 3 (600) → Level 4 (1000)
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">🏆 Achievement Badges</div>
+      <div class="badges-container">
+        <div class="badge locked" id="bdg-xp">⭐<span class="badge-tooltip">First 100 XP</span></div>
+        <div class="badge locked" id="bdg-streak">🔥<span class="badge-tooltip">7-Day Streak</span></div>
+        <div class="badge locked" id="bdg-hrs">📚<span class="badge-tooltip">50 Study Hours</span></div>
+        <div class="badge locked" id="bdg-tasks">🎯<span class="badge-tooltip">100 Tasks Done</span></div>
+        <div class="badge locked" id="bdg-ai">🤖<span class="badge-tooltip">AI Top Student</span></div>
+      </div>
+      <div style="text-align:center;margin-top:16px;font-size:.8rem;font-weight:700;color:var(--text-muted);">
+        Keep focusing to unlock all badges!
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 5: Exam Readiness -->
+  <div class="grid-1">
+    <div class="card">
+      <div class="section-title">🎯 Exam Readiness Meter</div>
+      <div style="display:flex;align-items:center;gap:20px;">
+        <div style="flex:1;">
+          <div class="prog-label"><span>Overall Readiness (Based on Tasks, XP & Study Hours)</span><span id="examReadinessTxt">0%</span></div>
+          <div class="prog-bar-wrap" style="height:18px;"><div class="prog-bar-fill bg-gradient-purple" id="examReadinessBar" style="width:0%"></div></div>
+        </div>
+        <div style="font-size:3rem;" id="examMascot">😟</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script src="{{ url_for('static', filename='fy_stats.js') }}?v=1.0.4"></script>
+<script src="{{ url_for('static', filename='progress.js') }}?v=1.0.4"></script>
+
+
+<script>
+// ── Populate Productivity Summary cards ──
+document.addEventListener("DOMContentLoaded", () => {
+  // Load stats from localStorage (fy_stats set by fy_stats.js)
+  const raw   = localStorage.getItem("fy_stats");
+  const stats = raw ? JSON.parse(raw) : { xp:0, streak:0, totalDone:0 };
+
+  // XP
+  const xpEl = document.getElementById("sumXP");
+  if (xpEl) xpEl.textContent = (stats.xp || 0) + " XP";
+
+  // Streak
+  const stEl = document.getElementById("sumStreak");
+  if (stEl) stEl.textContent = (stats.streak || 0) + " days";
+
+  // Tasks done
+  const tdEl = document.getElementById("sumTasks");
+  if (tdEl) tdEl.textContent = stats.totalDone || 0;
+
+  // Study hours from study_sessions API
+  fetch("/api/progress_data")
+    .then(r => r.json())
+    .then(data => {
+      const sessions = data.study_sessions || [];
+      const today    = new Date().toISOString().split("T")[0];
+      const totalMins = sessions.reduce((a, s) => a + (s.duration || 0), 0);
+      const hrs = (totalMins / 60).toFixed(1);
+      const shEl = document.getElementById("sumHours");
+      if (shEl) shEl.textContent = hrs + " hrs";
+
+      // Productivity tip based on performance
+      const tip = document.getElementById("productivityTip");
+      if (tip) {
+        const xp = stats.xp || 0;
+        const done = stats.totalDone || 0;
+        if (xp >= 500 && done >= 20) {
+          tip.textContent = "🏆 You're crushing it! Keep this momentum going!";
+        } else if (xp >= 200) {
+          tip.textContent = "⚡ Great progress! You're building strong study habits.";
+        } else if (done > 0) {
+          tip.textContent = "🌱 Good start! Complete more tasks to level up faster.";
+        } else {
+          tip.textContent = "💡 Start by adding tasks in the Planner — every step counts!";
+        }
+      }
+    })
+    .catch(() => {
+      const shEl = document.getElementById("sumHours");
+      if (shEl) shEl.textContent = "0 hrs";
+    });
+});
+</script>
+
+{% include 'ai_monitor.html' %}
+</body>
+</html>

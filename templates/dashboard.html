@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FocusYou – Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+  
+<link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <script>
+    (function() {
+      const theme = localStorage.getItem('fy_theme') || 'default';
+      if (theme !== 'default') {
+        document.documentElement.className = 'theme-' + theme;
+      }
+    })();
+  </script>
+</head>
+<body>
+
+<!-- USERNAME injected by Flask into a JS variable — no {{ user }} anywhere else in HTML -->
+<script>
+  const USERNAME = "{{ user }}";
+</script>
+
+<!-- ── SIDEBAR ── -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">🐰</span>
+    <span class="logo-text">Focus<span class="logo-accent">You</span></span>
+  </div>
+
+  <div class="sidebar-user">
+    <div class="user-avatar" id="avatarLetter">{{ user[0].upper() }}</div>
+    <div>
+      <div class="user-name" id="sidebarName">{{ user }}</div>
+      <div class="user-sub">✨ Ready to focus!</div>
+    </div>
+  </div>
+
+  <ul class="nav-links">
+    <li><a href="/dashboard" class="nav-link active">
+      <span class="nav-icon">🏠</span><span>Dashboard</span>
+    </a></li>
+    <li><a href="/chatbot" class="nav-link">
+      <span class="nav-icon">🤖</span><span>AI Chatbot</span>
+    </a></li>
+    <li><a href="/timer" class="nav-link">
+      <span class="nav-icon">⏱️</span><span>Study Timer</span>
+    </a></li>
+    <li><a href="/planner" class="nav-link">
+      <span class="nav-icon">📅</span><span>Planner</span>
+    </a></li>
+    <li><a href="/progress" class="nav-link">
+      <span class="nav-icon">📊</span><span>Progress</span>
+    </a></li>
+
+    <li><a href="/settings" class="nav-link">
+      <span class="nav-icon">⚙️</span><span>Settings</span>
+    </a></li>
+  </ul>
+
+  <div class="sidebar-footer">
+    <button class="logout-btn" onclick="window.location='/'">🚪 Logout</button>
+  </div>
+</nav>
+
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+
+<!-- ── MAIN ── -->
+<main class="main-content">
+
+  <div class="page-header">
+    <div>
+      <div class="page-title" id="greeting"></div>
+      <div class="page-subtitle" id="greetSub"></div>
+    </div>
+    <div class="header-bunny" id="headerBunny" onclick="bunnyReact()" title="Click me!">🐰</div>
+  </div>
+
+  <!-- ✅ Inline greeting — runs immediately, no JS dependency -->
+  <script>
+    (function(){
+      var h = new Date().getHours();
+      var name = "{{ user }}";
+      var label, icon, sub;
+      if      (h >= 5  && h < 12) { label = "Good Morning";   icon = "☀️";  sub = "Rise and shine — your best study session awaits! 🌟"; }
+      else if (h >= 12 && h < 17) { label = "Good Afternoon"; icon = "🌤️"; sub = "Keep the momentum going — you're doing great! 💪"; }
+      else                         { label = "Studynight";     icon = "🌙";  sub = "Late-night grind — remember to rest too! 💤"; }
+      document.getElementById("greeting").textContent = label + ", " + name + "! " + icon;
+      document.getElementById("greetSub").textContent  = sub;
+    })();
+  </script>
+
+  <div class="motivation-card" id="motivationCard" style="transition:opacity 0.5s ease;">
+    <div class="motivation-emoji" id="motEmoji">🚀</div>
+    <div style="flex:1;">
+      <div class="motivation-text" id="motText">Loading your motivation…</div>
+      <div class="motivation-sub"  id="motSub">Just a second ✨</div>
+    </div>
+    <button onclick="nextMotivation()" title="Next quote"
+      style="background:rgba(255,255,255,0.2);border:none;border-radius:50%;width:36px;height:36px;font-size:1rem;cursor:pointer;color:white;flex-shrink:0;transition:background .2s;"
+      onmouseover="this.style.background='rgba(255,255,255,0.38)'"
+      onmouseout="this.style.background='rgba(255,255,255,0.2)'">▶</button>
+  </div>
+
+  <!-- ✅ Inline motivation quotes — auto-rotates every 5 seconds -->
+  <script>
+    var _motQuotes = [
+      {emoji:"🚀", text:"Every expert was once a beginner. Keep going!",           sub:"Progress over perfection 🌈"},
+      {emoji:"🔥", text:"Consistency beats perfection every time.",                 sub:"Keep that streak alive! 💪"},
+      {emoji:"🌸", text:"Small steps every day lead to big results!",               sub:"You've got this 🌟"},
+      {emoji:"🎯", text:"Focus on progress, not perfection.",                       sub:"One task at a time ✨"},
+      {emoji:"🌟", text:"Your future self will thank you for studying today.",      sub:"FocusYou is with you ☕"},
+      {emoji:"🧠", text:"Your brain is a muscle — the more you use it, the stronger it gets.", sub:"Study hard, grow harder 💡"},
+      {emoji:"💎", text:"Discipline is choosing what you want most over what you want now.", sub:"Choose your future self 🏆"},
+      {emoji:"⚡", text:"Success is the sum of small efforts repeated day in and day out.", sub:"One more task = one step closer 🎯"},
+      {emoji:"🐰", text:"Even the bunny studies hard!",                             sub:"Hop to it! 🥕"},
+      {emoji:"🦋", text:"Believe you can and you're halfway there.",                sub:"Confidence is your superpower ✨"},
+      {emoji:"📚", text:"The secret of getting ahead is getting started.",          sub:"Start now, not later! 🌟"},
+      {emoji:"🏆", text:"Winners never quit, and quitters never win.",              sub:"Never give up 🔥"},
+      {emoji:"☕", text:"Today's hard work is tomorrow's easy review.",             sub:"FocusYou believes in you 🐰"},
+      {emoji:"🌙", text:"Great things never came from comfort zones.",              sub:"Push a little further today 💪"},
+      {emoji:"🌺", text:"Don't watch the clock — do what it does. Keep going.",    sub:"Time flies when you're focused ⏱️"},
+    ];
+    var _motIdx = Math.floor(Math.random() * _motQuotes.length);
+
+    function _applyMotivation(q) {
+      var card = document.getElementById("motivationCard");
+      card.style.opacity = "0";
+      setTimeout(function() {
+        document.getElementById("motEmoji").textContent = q.emoji;
+        document.getElementById("motText").textContent  = q.text;
+        document.getElementById("motSub").textContent   = q.sub;
+        card.style.opacity = "1";
+      }, 500);
+    }
+
+    function nextMotivation() {
+      _motIdx = (_motIdx + 1) % _motQuotes.length;
+      _applyMotivation(_motQuotes[_motIdx]);
+    }
+
+    // Show first quote immediately
+    _applyMotivation(_motQuotes[_motIdx]);
+
+    // Auto-rotate every 5 seconds
+    setInterval(function() {
+      _motIdx = (_motIdx + 1) % _motQuotes.length;
+      _applyMotivation(_motQuotes[_motIdx]);
+    }, 5000);
+  </script>
+
+  <div class="stats-grid">
+    <div class="card card-xp">
+      <div class="card-title">⭐ XP Points</div>
+      <div class="card-value" id="dashXP">0</div>
+      <div class="card-sub" id="dashXPSub">Complete tasks to earn XP!</div>
+    </div>
+    <div class="card card-streak">
+      <div class="card-title">🔥 Streak</div>
+      <div class="card-value" id="dashStreak">0</div>
+      <div class="card-sub" id="dashStreakSub">consecutive days</div>
+    </div>
+    <div class="card card-level">
+      <div class="card-title">🏆 Grade</div>
+      <div class="card-value" id="dashGrade">🌱</div>
+      <div class="card-sub" id="dashGradeSub">Just getting started!</div>
+      <div class="progress-bar" style="margin-top:8px;"><div class="progress-fill" id="dashGradeBar" style="width:0%"></div></div>
+    </div>
+    <div class="card card-focus">
+      <div class="card-title">✅ Tasks Done</div>
+      <div class="card-value" id="dashDone">0</div>
+      <div class="card-sub">total completed</div>
+    </div>
+  </div>
+
+  <div class="section-title">🚀 Quick Access</div>
+  <div class="menu-grid">
+    <a href="/chatbot" class="menu-card highlight">
+      <div class="menu-card-icon">🤖</div>
+      <div class="menu-card-label">AI Chatbot</div>
+      <div class="menu-card-sub">Ask me anything!</div>
+    </a>
+    <a href="/timer" class="menu-card">
+      <div class="menu-card-icon">⏱️</div>
+      <div class="menu-card-label">Study Timer</div>
+      <div class="menu-card-sub">Pomodoro & more</div>
+    </a>
+    <a href="/planner" class="menu-card">
+      <div class="menu-card-icon">📅</div>
+      <div class="menu-card-label">Planner</div>
+      <div class="menu-card-sub">Plan your day</div>
+    </a>
+    <a href="/progress" class="menu-card">
+      <div class="menu-card-icon">📊</div>
+      <div class="menu-card-label">Progress</div>
+      <div class="menu-card-sub">Track your growth</div>
+    </a>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-title">📋 Today's Focus Plan</div>
+      <div id="dashTodayTasks" style="color:var(--text-muted);font-size:.9rem;font-weight:600;line-height:1.8;max-height:150px;overflow-y:auto;padding-right:5px;">
+        <div style="text-align:center;padding:10px 0;">
+          <span style="display:inline-block;animation:spin .7s linear infinite;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--purple-deep);border-radius:50%;"></span>
+        </div>
+      </div>
+      <a href="/timer" style="display:inline-block;margin-top:16px;">
+        <button class="btn btn-primary" style="font-size:.82rem;padding:9px 18px;">⏱️ Start Timer</button>
+      </a>
+    </div>
+
+    <div class="chat-quick">
+      <div class="section-title">🤖 Quick Ask AI</div>
+      <div class="chat-input-row">
+        <input type="text" id="quickInput" placeholder="Ask anything… e.g. Explain recursion"
+               onkeydown="if(event.key==='Enter') quickAsk()"/>
+        <button class="btn btn-primary" id="askBtn" onclick="quickAsk()">Ask 🚀</button>
+      </div>
+      <div class="chips-row">
+        <span class="chip" onclick="setQ('Explain ')">✨ Explain</span>
+        <span class="chip" onclick="setQ('Give me an example of ')">💡 Example</span>
+        <span class="chip" onclick="setQ('Quiz me on ')">🎯 Quiz me</span>
+        <a href="/chatbot" style="font-size:.78rem;font-weight:800;color:var(--purple-deep);margin-left:auto;text-decoration:none;">Full Chat →</a>
+      </div>
+      <div id="quick-result"></div>
+    </div>
+  </div>
+
+</main>
+
+
+
+
+
+
+<script src="{{ url_for('static', filename='dashboard_scripts.js') }}?v=1.0.4"></script>
+
+{% include 'ai_monitor.html' %}
+</body>
+</html>

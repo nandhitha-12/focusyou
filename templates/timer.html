@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FocusYou – Study Timer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+  
+<link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <script>
+    (function() {
+      const theme = localStorage.getItem('fy_theme') || 'default';
+      if (theme !== 'default') {
+        document.documentElement.className = 'theme-' + theme;
+      }
+    })();
+  </script>
+</head>
+<body>
+
+<!-- ALARM BANNER -->
+<div class="alarm-banner" id="alarmBanner">
+  <span id="alarmMsg">⏰ Time's up!</span>
+  <button onclick="dismissAlarm()">✓ Dismiss</button>
+</div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">🐰</span>
+    <span class="logo-text">Focus<span class="logo-accent">You</span></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="/dashboard" class="nav-link"><span class="nav-icon">🏠</span><span>Dashboard</span></a></li>
+    <li><a href="/chatbot"   class="nav-link"><span class="nav-icon">🤖</span><span>AI Chatbot</span></a></li>
+    <li><a href="/timer"     class="nav-link active"><span class="nav-icon">⏱️</span><span>Study Timer</span></a></li>
+    <li><a href="/planner"   class="nav-link"><span class="nav-icon">📅</span><span>Planner</span></a></li>
+    <li><a href="/progress"  class="nav-link"><span class="nav-icon">📊</span><span>Progress</span></a></li>
+
+    <li><a href="/settings"  class="nav-link"><span class="nav-icon">⚙️</span><span>Settings</span></a></li>
+  </ul>
+  <div class="sidebar-footer">
+    <button class="logout-btn" onclick="window.location='/'">🚪 Logout</button>
+  </div>
+</nav>
+
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+
+<main class="main-content">
+  <div class="page-header">
+    <div class="page-title">⏱️ Study Timer</div>
+    <div class="page-subtitle">🍅 Pomodoro &nbsp;·&nbsp; 🧠 Active Recall &nbsp;·&nbsp; 🔁 Spaced Repetition &nbsp;·&nbsp; 🧑‍🏫 Feynman &nbsp;·&nbsp; ⚡ 52/17 Method &nbsp;·&nbsp; 🎵 Ambient Sounds</div>
+  </div>
+
+  <!-- MODE TABS -->
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="switchMode('pomodoro',this)">🍅 Pomodoro</button>
+    <button class="mode-tab" onclick="switchMode('recall',this)">🧠 Active Recall</button>
+    <button class="mode-tab" onclick="switchMode('spaced',this)">🔁 Spaced Repetition</button>
+    <button class="mode-tab" onclick="switchMode('feynman',this)">🧑‍🏫 Feynman</button>
+    <button class="mode-tab" onclick="switchMode('fiftytwo',this)">⚡ 52/17 Method</button>
+    <button class="mode-tab" onclick="switchMode('sounds',this)">🎵 Ambient Sounds</button>
+  </div>
+
+  <!-- ══════════ POMODORO ══════════ -->
+  <div id="mode-pomodoro">
+    <div class="grid-2">
+      <div class="card" style="text-align:center;">
+        <div class="phase-tabs">
+          <button class="phase-tab active" id="ptab-focus" onclick="setPhase('focus',this)">🎯 Focus 25m</button>
+          <button class="phase-tab" id="ptab-short" onclick="setPhase('short',this)">☕ Short 5m</button>
+          <button class="phase-tab" id="ptab-long"  onclick="setPhase('long',this)">🛋️ Long 15m</button>
+        </div>
+        <div class="ring-container">
+          <svg class="ring-svg" viewBox="0 0 240 240">
+            <defs>
+              <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#9D87F5"/><stop offset="100%" stop-color="#FF85A1"/>
+              </linearGradient>
+            </defs>
+            <circle class="ring-bg" cx="120" cy="120" r="104"/>
+            <circle class="ring-fill" id="pomRing" cx="120" cy="120" r="104" stroke-dasharray="653" stroke-dashoffset="0"/>
+          </svg>
+          <div class="ring-center">
+            <div class="timer-emoji" id="pomEmoji">🎯</div>
+            <div class="timer-display" id="pomDisplay">25:00</div>
+            <div class="timer-label" id="pomLabel">FOCUS TIME</div>
+          </div>
+        </div>
+        <div class="session-dots" id="pomDots">
+          <div class="session-dot active"></div><div class="session-dot"></div>
+          <div class="session-dot"></div><div class="session-dot"></div>
+        </div>
+        <div class="timer-controls">
+          <button class="btn btn-primary" id="pomBtn" onclick="togglePom()">▶ Start</button>
+          <button class="btn btn-outline" onclick="resetPom()">↺ Reset</button>
+        </div>
+        <div class="stats-strip">
+          <span class="stat-chip">🍅 Sessions: <strong id="pomSess">0</strong></span>
+          <span class="stat-chip">⭐ XP: <strong id="pomXP">0</strong></span>
+          <span class="stat-chip">⏱️ Total: <strong id="pomTotal">0m</strong></span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="card">
+          <div class="section-title">⚙️ Custom Durations</div>
+          <div class="grid-3">
+            <div><label class="form-label">Focus (min)</label><input type="number" class="input" id="cfFocus" value="25" min="1" max="90" onchange="updatePomDur()"/></div>
+            <div><label class="form-label">Short Break</label><input type="number" class="input" id="cfShort" value="5"  min="1" max="30" onchange="updatePomDur()"/></div>
+            <div><label class="form-label">Long Break</label><input type="number" class="input" id="cfLong"  value="15" min="5" max="60" onchange="updatePomDur()"/></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-title">📖 How Pomodoro Works</div>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><div class="step-text">Work focused for <strong>25 minutes</strong> — zero distractions!</div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-text">Take a <strong>5-minute break</strong> — stretch or breathe deeply</div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-text">Repeat <strong>4 times</strong>, then a 15-min long break</div></div>
+            <div class="step"><div class="step-num">4</div><div class="step-text">Earn <strong>+15 XP</strong> for every completed session! 🏆</div></div>
+          </div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-card-title">💡 Pro Tip</div>
+          <div class="tip-card-body" id="pomTip"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ ACTIVE RECALL ══════════ -->
+  <div id="mode-recall" style="display:none;">
+    <div class="grid-2">
+      <div class="card">
+        <div class="section-title">🃏 Flashcard Session</div>
+        <div class="form-group"><label class="form-label">Question</label><input type="text" class="input" id="newQ" placeholder="e.g. What is Binary Search?" style="margin-bottom:8px;"/></div>
+        <div class="form-group"><label class="form-label">Answer</label><input type="text" class="input" id="newA" placeholder="e.g. O(log n) search algorithm"/></div>
+        <button class="btn btn-primary btn-sm" onclick="addCard()" style="margin-bottom:20px;">+ Add Card</button>
+        <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);text-align:center;margin-bottom:8px;" id="cardCtr"></div>
+        <div id="recall-deck"></div>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:12px;" id="cardNav" style="display:none;">
+          <button class="btn btn-outline btn-sm" onclick="prevCard()">← Prev</button>
+          <button class="btn btn-mint   btn-sm" onclick="flipCard()">🔄 Flip</button>
+          <button class="btn btn-primary btn-sm" onclick="nextCard()">Next →</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">📝 My Deck (<span id="deckCount">0</span> cards)</div>
+        <div id="card-list" style="max-height:300px;overflow-y:auto;"></div>
+        <div style="margin-top:14px;padding:14px;background:var(--purple-light);border-radius:var(--radius-sm);">
+          <div style="font-size:.8rem;font-weight:800;color:var(--purple-deep);margin-bottom:4px;">💡 Active Recall Tip</div>
+          <div style="font-size:.8rem;color:var(--text-soft);font-weight:600;line-height:1.7;">Try to recall the answer <strong>BEFORE</strong> flipping the card. This strengthens memory by up to 50%!</div>
+        </div>
+        <div style="margin-top:12px;padding:14px;background:linear-gradient(135deg,var(--pink-light),var(--yellow));border-radius:var(--radius-sm);">
+          <div style="font-size:.8rem;font-weight:800;color:var(--pink-deep);margin-bottom:6px;">🎯 Score</div>
+          <div style="display:flex;gap:14px;font-size:.82rem;font-weight:700;color:var(--text-soft);">
+            <span>✅ Got it: <strong id="rcGot">0</strong></span>
+            <span>❌ Missed: <strong id="rcMiss">0</strong></span>
+            <span>🎯 Accuracy: <strong id="rcAcc">—</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SPACED REPETITION ══════════ -->
+  <div id="mode-spaced" style="display:none;">
+    <div class="grid-2">
+      <div class="card">
+        <div class="section-title">🔁 Review Session</div>
+        <div style="font-size:.85rem;color:var(--text-soft);font-weight:600;margin-bottom:16px;line-height:1.7;">Rate how well you recalled each topic. SM-2 algorithm schedules your next review automatically — just like Anki!</div>
+        <div id="sp-input">
+          <div class="form-group"><label class="form-label">Topic to review</label><input type="text" class="input" id="spTopic" placeholder="e.g. Photosynthesis, Binary Trees…"/></div>
+          <button class="btn btn-primary btn-sm" onclick="startSR()">Start Review 🚀</button>
+        </div>
+        <div id="sp-card" style="display:none;">
+          <div class="recall-card">
+            <div style="font-size:.7rem;font-weight:800;text-transform:uppercase;color:var(--text-muted);">Reviewing</div>
+            <div style="font-family:var(--font-brand);font-size:1.4rem;color:var(--purple-deep);" id="spLabel">—</div>
+            <div style="font-size:.88rem;color:var(--text-soft);font-weight:600;">How well did you recall this?</div>
+            <div class="recall-buttons">
+              <button class="recall-btn r-0" onclick="rateSR(0)">0 – Blank</button>
+              <button class="recall-btn r-1" onclick="rateSR(1)">1 – Wrong</button>
+              <button class="recall-btn r-2" onclick="rateSR(2)">2 – Hard</button>
+              <button class="recall-btn r-3" onclick="rateSR(3)">3 – OK</button>
+              <button class="recall-btn r-4" onclick="rateSR(4)">4 – Good</button>
+              <button class="recall-btn r-5" onclick="rateSR(5)">5 – Easy!</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="card">
+          <div class="section-title">📅 Review Schedule</div>
+          <div id="sp-schedule"><div style="color:var(--text-muted);font-size:.88rem;font-weight:600;">Review topics to see your schedule here.</div></div>
+        </div>
+        <div style="padding:16px;background:linear-gradient(135deg,var(--mint-light),var(--blue-light));border-radius:var(--radius);border:1.5px solid var(--mint);">
+          <div style="font-size:.82rem;font-weight:800;color:#1E5C47;margin-bottom:6px;">🧬 SM-2 Algorithm</div>
+          <div style="font-size:.82rem;color:var(--text-soft);font-weight:600;line-height:1.8;">Rate 0–2 → Review tomorrow 📅<br>Rate 3 → 1 day<br>Rate 4 → 6 days<br>Rate 5 → Interval keeps growing! 📈</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ FEYNMAN TECHNIQUE ══════════ -->
+  <div id="mode-feynman" style="display:none;">
+    <div class="grid-2">
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="card">
+          <div class="section-title">🧑‍🏫 Feynman Technique</div>
+          <div style="font-size:.88rem;color:var(--text-soft);font-weight:600;line-height:1.8;margin-bottom:14px;">Named after Nobel physicist Richard Feynman: <strong>"If you can't explain it simply, you don't understand it yet."</strong></div>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Choose</strong> — Write the concept name at the top of a blank page</div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Explain Simply</strong> — Teach it as if to a 10-year-old. No jargon!</div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Find Gaps</strong> — Where did you get stuck? Go back to notes</div></div>
+            <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Simplify</strong> — Use real-life analogies to solidify it</div></div>
+          </div>
+        </div>
+        <div style="padding:16px;background:linear-gradient(135deg,var(--mint-light),var(--blue-light));border-radius:var(--radius);border:1.5px solid var(--mint);">
+          <div style="font-size:.82rem;font-weight:800;color:#1E5C47;margin-bottom:6px;">⏱️ Suggested Time Per Step</div>
+          <div style="font-size:.82rem;color:var(--text-soft);font-weight:600;line-height:1.8;">Step 1–2: <strong>20 min</strong> — Write your explanation<br>Step 3: <strong>10 min</strong> — Review & find gaps<br>Step 4: <strong>10 min</strong> — Refine with analogies</div>
+        </div>
+        <div class="card">
+          <div class="section-title">📋 Saved Sessions</div>
+          <div id="feynHistory" style="max-height:200px;overflow-y:auto;"><div style="color:var(--text-muted);font-size:.85rem;font-weight:600;">Complete a session to see it here!</div></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="card">
+          <div class="section-title">✍️ Feynman Workspace</div>
+          <div class="form-group"><label class="form-label">Topic I'm Studying</label><input type="text" class="input" id="feynTopic" placeholder="e.g. Photosynthesis, Newton's Laws…"/></div>
+          <div id="feyn-tracker" style="display:none;">
+            <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;" id="feynStepBtns">
+              <button class="phase-tab active" onclick="feynStep(0,this)">1️⃣ Choose</button>
+              <button class="phase-tab" onclick="feynStep(1,this)">2️⃣ Explain</button>
+              <button class="phase-tab" onclick="feynStep(2,this)">3️⃣ Gaps</button>
+              <button class="phase-tab" onclick="feynStep(3,this)">4️⃣ Simplify</button>
+            </div>
+            <div id="feynContent"></div>
+          </div>
+          <button class="btn btn-primary btn-sm" id="feynStartBtn" onclick="startFeynman()" style="margin-top:8px;">🚀 Start Session</button>
+        </div>
+        <div class="card" style="text-align:center;" id="feynTimerCard" >
+          <div class="section-title" style="justify-content:center;">⏱️ Step Timer</div>
+          <div class="ring-container" style="width:160px;height:160px;margin:0 auto 12px;">
+            <svg style="width:160px;height:160px;" viewBox="0 0 160 160">
+              <defs><linearGradient id="feynGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#B5EAD7"/><stop offset="100%" stop-color="#9D87F5"/></linearGradient></defs>
+              <circle fill="none" stroke="var(--border)" stroke-width="10" cx="80" cy="80" r="66"/>
+              <circle fill="none" stroke="url(#feynGrad)" stroke-width="10" stroke-linecap="round" cx="80" cy="80" r="66" stroke-dasharray="415" stroke-dashoffset="0" transform="rotate(-90 80 80)" id="feynRing" style="transition:stroke-dashoffset .8s linear;"/>
+            </svg>
+            <div class="ring-center">
+              <div style="font-family:var(--font-brand);font-size:1.9rem;color:var(--purple-deep);" id="feynDisplay">20:00</div>
+              <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;color:var(--text-muted);" id="feynTimerLabel">STEP</div>
+            </div>
+          </div>
+          <div class="timer-controls">
+            <button class="btn btn-primary btn-sm" id="feynTimerBtn" onclick="toggleFeynTimer()">▶ Start</button>
+            <button class="btn btn-outline btn-sm" onclick="resetFeynTimer()">↺ Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 52/17 METHOD ══════════ -->
+  <div id="mode-fiftytwo" style="display:none;">
+    <div class="grid-2">
+      <div class="card" style="text-align:center;">
+        <div style="margin-bottom:16px;">
+          <div style="font-family:var(--font-brand);font-size:1.1rem;color:var(--text);margin-bottom:4px;">⚡ 52/17 Deep Focus Method</div>
+          <div style="font-size:.82rem;color:var(--text-soft);font-weight:600;">Work 52 mins · True Break 17 mins · Repeat</div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:center;margin-bottom:16px;">
+          <div id="ftWork" style="flex:1;padding:10px;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--purple-deep),var(--pink-deep));color:white;font-weight:800;font-size:.85rem;">🧠 Work: 52 min</div>
+          <div id="ftBreak" style="flex:1;padding:10px;border-radius:var(--radius-sm);background:var(--border);color:var(--text-muted);font-weight:800;font-size:.85rem;">☕ Break: 17 min</div>
+        </div>
+        <div class="ring-container">
+          <svg class="ring-svg" viewBox="0 0 240 240">
+            <defs><linearGradient id="ftGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#B5EAD7"/><stop offset="100%" stop-color="#9D87F5"/></linearGradient></defs>
+            <circle class="ring-bg" cx="120" cy="120" r="104"/>
+            <circle class="ring-fill" id="ftRing" cx="120" cy="120" r="104" stroke-dasharray="653" stroke-dashoffset="0" stroke="url(#ftGrad)"/>
+          </svg>
+          <div class="ring-center">
+            <div style="font-size:2rem;" id="ftEmoji">🧠</div>
+            <div class="timer-display" id="ftDisplay">52:00</div>
+            <div class="timer-label" id="ftLabel">DEEP WORK</div>
+          </div>
+        </div>
+        <div class="session-dots" id="ftDots">
+          <div class="session-dot active"></div><div class="session-dot"></div>
+          <div class="session-dot"></div><div class="session-dot"></div>
+        </div>
+        <div class="timer-controls">
+          <button class="btn btn-primary" id="ftBtn" onclick="toggleFT()">▶ Start</button>
+          <button class="btn btn-outline" onclick="resetFT()">↺ Reset</button>
+        </div>
+        <div class="stats-strip">
+          <span class="stat-chip">⚡ Cycles: <strong id="ftCycles">0</strong></span>
+          <span class="stat-chip">⏱️ Focus: <strong id="ftFocus">0m</strong></span>
+          <span class="stat-chip">⭐ XP: <strong id="ftXP">0</strong></span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="card">
+          <div class="section-title">⚙️ Custom Durations</div>
+          <div class="grid-3">
+            <div><label class="form-label">Work (min)</label><input type="number" class="input" id="ftWorkMin" value="52" min="10" max="120" onchange="updateFTDur()"/></div>
+            <div><label class="form-label">Break (min)</label><input type="number" class="input" id="ftBreakMin" value="17" min="5"  max="60"  onchange="updateFTDur()"/></div>
+            <div><label class="form-label">Cycles</label><input type="number" class="input" id="ftCycleN" value="4" min="1" max="10" onchange="updateFTDots()"/></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-title">📖 How 52/17 Works</div>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><div class="step-text">Work with <strong>100% focus</strong> for 52 minutes — single task only</div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-text">Take a <strong>true 17-min break</strong> — walk, stretch, no scrolling!</div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-text">Repeat cycles — most productive workers do <strong>3–4 per day</strong></div></div>
+            <div class="step"><div class="step-num">4</div><div class="step-text">Based on <strong>Draugiem Group research</strong> on top 10% productive workers 📊</div></div>
+          </div>
+        </div>
+        <div class="card" style="background:linear-gradient(135deg,var(--purple-light),var(--pink-light));border-color:var(--purple);">
+          <div class="section-title">🆚 52/17 vs Pomodoro</div>
+          <div style="font-size:.82rem;font-weight:600;color:var(--text-soft);line-height:1.8;">
+            <div style="display:flex;gap:8px;margin-bottom:6px;"><span>🍅</span><span><strong>Pomodoro</strong> — 25/5 min. Great for beginners & varied tasks.</span></div>
+            <div style="display:flex;gap:8px;"><span>⚡</span><span><strong>52/17</strong> — 52/17 min. Better for deep work & complex problems.</span></div>
+          </div>
+        </div>
+        <div class="tip-card"><div class="tip-card-title">💡 52/17 Tip</div><div class="tip-card-body" id="ftTip"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ AMBIENT SOUNDS ══════════ -->
+  <div id="mode-sounds" style="display:none;">
+    <div class="grid-2">
+      <div class="card">
+        <div class="section-title">🎵 Focus Soundscapes</div>
+        <div style="font-size:.85rem;color:var(--text-soft);font-weight:600;margin-bottom:16px;">Pick a sound to boost your focus. Ambient noise enhances creativity and concentration!</div>
+        <div class="sound-grid">
+          <button class="sound-btn" onclick="playSound(this,'rain')"><span class="sound-emoji">🌧️</span>Rain</button>
+          <button class="sound-btn" onclick="playSound(this,'forest')"><span class="sound-emoji">🌲</span>Forest</button>
+          <button class="sound-btn" onclick="playSound(this,'cafe')"><span class="sound-emoji">☕</span>Café</button>
+          <button class="sound-btn" onclick="playSound(this,'ocean')"><span class="sound-emoji">🌊</span>Ocean</button>
+          <button class="sound-btn" onclick="playSound(this,'fire')"><span class="sound-emoji">🔥</span>Fireplace</button>
+          <button class="sound-btn" onclick="playSound(this,'white')"><span class="sound-emoji">🌫️</span>White Noise</button>
+          <button class="sound-btn" onclick="playSound(this,'lofi')"><span class="sound-emoji">🎧</span>Lo-Fi</button>
+          <button class="sound-btn" onclick="playSound(this,'birds')"><span class="sound-emoji">🐦</span>Birds</button>
+          <button class="sound-btn" onclick="stopAll()"><span class="sound-emoji">🔇</span>Stop All</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:14px;">
+          <span style="font-size:.8rem;font-weight:700;color:var(--text-soft);">🔈</span>
+          <input type="range" id="volSlider" min="0" max="100" value="50" oninput="setVol(this.value)" style="flex:1;accent-color:var(--purple-deep);"/>
+          <span style="font-size:.8rem;font-weight:700;color:var(--text-soft);">🔊</span>
+          <span style="font-size:.78rem;font-weight:800;color:var(--purple-deep);" id="volPct">50%</span>
+        </div>
+        <div style="margin-top:12px;padding:10px 14px;background:var(--purple-light);border-radius:var(--radius-sm);font-size:.78rem;font-weight:700;color:var(--purple-deep);">
+          🎵 Now playing: <span id="nowPlaying">Nothing selected</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="card">
+          <div class="section-title">🧘 Best Sound For Each Task</div>
+          <div class="steps">
+            <div class="step"><div class="step-num">🌧️</div><div class="step-text"><strong>Rain / Ocean</strong> — Deep reading & memorization</div></div>
+            <div class="step"><div class="step-num">☕</div><div class="step-text"><strong>Café</strong> — Creative writing & brainstorming</div></div>
+            <div class="step"><div class="step-num">🔥</div><div class="step-text"><strong>Fireplace</strong> — Long study marathon sessions</div></div>
+            <div class="step"><div class="step-num">🎧</div><div class="step-text"><strong>Lo-Fi</strong> — Problem-solving & coding</div></div>
+          </div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-card-title">🔬 Science Behind It</div>
+          <div class="tip-card-body">Research shows moderate ambient noise (~70 dB) enhances creative thinking. Complete silence can make it harder to focus. Find YOUR sound! 🎵</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══ Timer-specific toast container ══ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ══ GLOBAL AI MONITOR (works across all pages) ══ -->
+{% include 'ai_monitor.html' %}
+</body>
+</html>

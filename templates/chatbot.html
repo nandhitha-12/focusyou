@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FocusYou – AI Chat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <script>
+    (function() {
+      const theme = localStorage.getItem('fy_theme') || 'default';
+      if (theme !== 'default') {
+        document.documentElement.className = 'theme-' + theme;
+      }
+    })();
+  </script>
+</head>
+<body class="chatbot-page">
+
+<!-- ════ LEFT: HISTORY PANEL ════ -->
+<div class="history-panel">
+  <div class="history-logo">
+    <span class="logo-bunny">🐰</span>
+    <span class="logo-text">Focus<span class="logo-accent">You</span></span>
+  </div>
+
+  <button class="new-chat-btn" onclick="newChat()">✏️ New Chat</button>
+
+  <div class="history-label">Recent Chats</div>
+
+  <div class="history-list" id="historyList">
+    <!-- Filled by JS with real timestamps -->
+  </div>
+
+  <button class="history-back" onclick="window.location='/dashboard'">🏠 Back to Dashboard</button>
+</div>
+
+<!-- ════ MIDDLE: CHAT AREA ════ -->
+<div class="chat-area">
+
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="header-avatar">🐰</div>
+    <div class="header-info">
+      <h2>FocusYou AI</h2>
+      <p>Your personal study & focus buddy 💜</p>
+    </div>
+    <div class="header-status">
+      <div class="status-dot"></div>
+      <span class="status-text">Online</span>
+    </div>
+  </div>
+
+  <!-- Tip Banner -->
+  <div class="tip-banner">
+    <span class="tip-badge">💡 Tip</span>
+    Try asking: "Make me a 2-hour study plan for maths" or "Quiz me on photosynthesis"
+  </div>
+
+  <!-- Messages -->
+  <div id="chat-messages">
+    <div class="date-divider">Today</div>
+
+    <div class="msg-row">
+      <div class="msg-avatar bot">🐰</div>
+      <div class="msg-col">
+        <div class="bubble bot">Hey {{ user }}! 👋 I'm your AI focus buddy. I can help you study smarter, manage stress, create revision plans, and keep you motivated. What shall we tackle today?</div>
+        <div class="msg-time">just now</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Input Area -->
+  <div class="bottom-area">
+    <div class="chips" id="chips">
+      <span class="chip" onclick="useChip('Give me study tips')">📚 Study tips</span>
+      <span class="chip" onclick="useChip('Best focus techniques')">🎯 Focus techniques</span>
+      <span class="chip" onclick="useChip('I am feeling stressed about exams')">😓 I'm stressed</span>
+      <span class="chip" onclick="useChip('Help me set a study goal for today')">🏆 Set a goal</span>
+      <span class="chip" onclick="useChip('Create a Pomodoro study plan for me')">⏱️ Pomodoro plan</span>
+      <span class="chip" onclick="useChip('Quiz me on any topic')">❓ Quiz me</span>
+    </div>
+    <div class="input-row">
+      <input type="text" id="chat-input" placeholder="Ask me anything… e.g. Explain photosynthesis simply"
+             onkeydown="if(event.key==='Enter') sendMessage()"/>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════ RIGHT: INFO PANEL ════ -->
+<div class="info-panel">
+
+  <!-- Mood Check -->
+  <div class="info-card">
+    <div class="info-title">😊 How are you feeling?</div>
+    <div class="mood-grid">
+      <button class="mood-btn" onclick="useMood('😄 Happy')"><span class="mood-emoji">😄</span>Happy</button>
+      <button class="mood-btn" onclick="useMood('😤 Focused')"><span class="mood-emoji">😤</span>Focused</button>
+      <button class="mood-btn" onclick="useMood('😓 Stressed')"><span class="mood-emoji">😓</span>Stressed</button>
+      <button class="mood-btn" onclick="useMood('😴 Tired')"><span class="mood-emoji">😴</span>Tired</button>
+    </div>
+  </div>
+
+  <!-- Study Tips -->
+  <div class="info-card">
+    <div class="info-title">⚡ Quick Tips</div>
+    <div class="tip-item"><span class="tip-icon">🍅</span>Use 25-min Pomodoro sessions for deep focus</div>
+    <div class="tip-item"><span class="tip-icon">💧</span>Drink water every 30 minutes while studying</div>
+    <div class="tip-item"><span class="tip-icon">📵</span>Put your phone face-down during study blocks</div>
+    <div class="tip-item"><span class="tip-icon">🌿</span>Take a 5-min walk between sessions</div>
+    <div class="tip-item"><span class="tip-icon">✍️</span>Write summaries — don't just re-read notes</div>
+  </div>
+
+  <!-- Session Stats -->
+  <div class="info-card">
+    <div class="info-title">📊 Session Stats</div>
+    <div class="stat-row"><span class="stat-label">Messages</span><span class="stat-val" id="msgCount">1</span></div>
+    <div class="stat-row"><span class="stat-label">Topics covered</span><span class="stat-val" id="topicCount">0</span></div>
+    <div class="stat-row"><span class="stat-label">Session time</span><span class="stat-val" id="sessionTime">0:00</span></div>
+  </div>
+
+  <!-- Motivation -->
+  <div class="info-card" style="background:linear-gradient(135deg,var(--purple-light),var(--pink-light));border-color:var(--purple);">
+    <div class="info-title">🌟 Daily Quote</div>
+    <div style="font-size:.82rem;font-weight:700;color:var(--text-soft);line-height:1.6;" id="dailyQuote">
+      "Small daily improvements lead to stunning results." 💪
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const USERNAME = "{{ user }}";
+</script>
+
+<script src="{{ url_for('static', filename='chatbot.js') }}?v=1.0.4"></script>
+
+{% include 'ai_monitor.html' %}
+</body>
+</html>

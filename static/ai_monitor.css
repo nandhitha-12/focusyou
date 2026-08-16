@@ -1,0 +1,113 @@
+/* ══════════════════════════════════════════════════
+   AI MONITOR PANEL — Global Component
+   Include this on every page that needs the monitor
+═══════════════════════════════════════════════════ */
+
+/* ── TOAST ── */
+.fy-toast-container{position:fixed;bottom:90px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.fy-toast{background:white;border-radius:10px;padding:14px 18px;box-shadow:0 8px 40px rgba(157,135,245,.2);font-size:.88rem;font-weight:700;color:#3D2C5E;border-left:4px solid #9D87F5;animation:fyToastIn .3s ease;max-width:300px;pointer-events:all;}
+@keyframes fyToastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+/* ── ALARM BANNER ── */
+.fy-alarm-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:10000;background:linear-gradient(135deg,#9D87F5,#FF85A1);color:white;padding:16px 32px;text-align:center;font-family:'Fredoka One',cursive;font-size:1.25rem;box-shadow:0 4px 24px rgba(157,135,245,.5);animation:fySlideDown .4s ease;}
+@keyframes fySlideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+.fy-alarm-banner button{background:rgba(255,255,255,.25);border:none;border-radius:99px;color:white;font-family:'Nunito',sans-serif;font-weight:800;padding:7px 18px;cursor:pointer;margin-left:14px;font-size:.88rem;}
+.fy-alarm-banner button:hover{background:rgba(255,255,255,.4);}
+
+/* ── MONITOR PANEL ── */
+.mon-panel{position:fixed;bottom:90px;right:24px;z-index:998;width:300px;background:white;border-radius:18px;box-shadow:0 12px 48px rgba(33,147,176,.3);border:2px solid #2193b0;overflow:hidden;transition:all .3s;}
+.mon-header{background:linear-gradient(135deg,#2193b0,#6dd5ed);color:white;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;font-weight:800;font-size:.88rem;gap:8px;}
+.mon-hbtns{display:flex;gap:5px;align-items:center;flex-shrink:0;}
+.mon-hbtn{background:rgba(255,255,255,.22);border:none;color:white;border-radius:6px;cursor:pointer;width:22px;height:22px;font-size:.85rem;display:flex;align-items:center;justify-content:center;font-weight:800;}
+.mon-hbtn:hover{background:rgba(255,255,255,.4);}
+#monBadge{font-size:.68rem;background:rgba(255,255,255,.2);padding:2px 8px;border-radius:99px;white-space:nowrap;}
+.mon-video-wrap{position:relative;background:#0d1117;line-height:0;overflow:hidden;}
+#monitorVideo{width:100%;height:169px;object-fit:cover;display:block;transform:scaleX(-1);}
+#monitorCanvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;transform:scaleX(-1);}
+#noFaceOverlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.58);flex-direction:column;align-items:center;justify-content:center;color:white;font-size:.82rem;font-weight:800;gap:6px;}
+.mon-status{padding:10px 14px;display:flex;align-items:center;gap:9px;border-bottom:1px solid #EDE4FA;}
+.mon-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;transition:background .4s;}
+.mon-dot.focused{background:#2ecc71;box-shadow:0 0 0 3px rgba(46,204,113,.25);animation:mpulse 1.5s infinite;}
+.mon-dot.away{background:#f39c12;box-shadow:0 0 0 3px rgba(243,156,18,.25);animation:mpulse 1.5s infinite;}
+.mon-dot.distracted{background:#e74c3c;box-shadow:0 0 0 3px rgba(231,76,60,.25);animation:mpulse 1.5s infinite;}
+.mon-dot.idle{background:#EDE4FA;}
+@keyframes mpulse{0%,100%{opacity:1}50%{opacity:.35}}
+#monStatusTxt{font-size:.82rem;font-weight:800;}
+#monTimer{margin-left:auto;font-size:.74rem;color:#B0A0CC;font-weight:700;}
+.mon-msg{padding:10px 14px 12px;font-size:.82rem;font-weight:600;color:#7B6897;line-height:1.6;min-height:54px;}
+.mon-coach-label{color:#2193b0;font-weight:800;}
+.mon-stats{display:flex;gap:0;border-top:1px solid #EDE4FA;}
+.mon-stat{flex:1;padding:7px 10px;text-align:center;font-size:.72rem;font-weight:800;color:#7B6897;}
+.mon-stat span{display:block;font-size:.95rem;color:#3D2C5E;}
+.mon-stat:not(:last-child){border-right:1px solid #EDE4FA;}
+.mon-enable-btn{width:100%;padding:11px;border:none;background:linear-gradient(135deg,#2193b0,#6dd5ed);color:white;font-family:'Nunito',sans-serif;font-weight:800;font-size:.85rem;cursor:pointer;transition:.2s;letter-spacing:.3px;}
+.mon-enable-btn:hover{filter:brightness(1.1);}
+.mon-enable-btn.on{background:linear-gradient(135deg,#e74c3c,#c0392b);}
+.mon-enable-btn:disabled{opacity:.6;cursor:not-allowed;}
+.mon-mini .mon-video-wrap,.mon-mini .mon-status,.mon-mini .mon-msg,.mon-mini .mon-stats{display:none!important;}
+
+/* ── FLOATING BUTTON ── */
+.mon-fab{position:fixed;bottom:24px;right:24px;z-index:997;background:linear-gradient(135deg,#2193b0,#6dd5ed);color:white;border:none;border-radius:99px;padding:12px 20px;font-family:'Nunito',sans-serif;font-weight:800;font-size:.88rem;cursor:pointer;box-shadow:0 4px 20px rgba(33,147,176,.45);display:flex;align-items:center;gap:8px;transition:all .2s;}
+.mon-fab:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(33,147,176,.55);}
+.mon-fab.active{background:linear-gradient(135deg,#6dd5ed,#2193b0);}
+
+/* ── CURRENT PAGE BADGE on FAB ── */
+.mon-fab-page{font-size:.7rem;opacity:.75;font-weight:600;}
+
+/* ── VOICE TOGGLE SWITCH ── */
+.mon-voice-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: #f9f8ff;
+  border-top: 1px solid #EDE4FA;
+  font-size: .8rem;
+  font-weight: 700;
+  color: #7B6897;
+}
+.mon-voice-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.fy-switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+}
+.fy-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.fy-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 20px;
+}
+.fy-slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+input:checked + .fy-slider {
+  background-color: #2193b0;
+}
+input:checked + .fy-slider:before {
+  transform: translateX(16px);
+}
+

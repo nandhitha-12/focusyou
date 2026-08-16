@@ -1,0 +1,10 @@
+Flask
+Flask-Cors
+authlib
+certifi
+groq
+opencv-python-headless
+Werkzeug
+requests
+python-dotenv
+gunicorn

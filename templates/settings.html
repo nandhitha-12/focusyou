@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FocusYou – Settings</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+  
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <script>
+    (function() {
+      const theme = localStorage.getItem('fy_theme') || 'default';
+      if (theme !== 'default') {
+        document.documentElement.className = 'theme-' + theme;
+      }
+    })();
+  </script>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">🐰</span>
+    <span class="logo-text">Focus<span class="logo-accent">You</span></span>
+  </div>
+
+  <div class="sidebar-user">
+    <div class="user-avatar" id="avatarLetter">{{ user[0].upper() }}</div>
+    <div>
+      <div class="user-name" id="sidebarName">{{ user }}</div>
+      <div class="user-sub">⚙️ Settings Mode</div>
+    </div>
+  </div>
+
+  <ul class="nav-links">
+    <li><a href="/dashboard" class="nav-link">
+      <span class="nav-icon">🏠</span><span>Dashboard</span>
+    </a></li>
+    <li><a href="/chatbot" class="nav-link">
+      <span class="nav-icon">🤖</span><span>AI Chatbot</span>
+    </a></li>
+    <li><a href="/timer" class="nav-link">
+      <span class="nav-icon">⏱️</span><span>Study Timer</span>
+    </a></li>
+    <li><a href="/planner" class="nav-link">
+      <span class="nav-icon">📅</span><span>Planner</span>
+    </a></li>
+    <li><a href="/progress" class="nav-link">
+      <span class="nav-icon">📊</span><span>Progress</span>
+    </a></li>
+    <li><a href="/settings" class="nav-link active">
+      <span class="nav-icon">⚙️</span><span>Settings</span>
+    </a></li>
+  </ul>
+
+  <div class="sidebar-footer">
+    <button class="logout-btn" onclick="window.location='/'">🚪 Logout</button>
+  </div>
+</nav>
+
+<button class="menu-toggle" id="menuToggle">☰</button>
+<div class="overlay" id="overlay"></div>
+
+<!-- ── MAIN CONTENT ── -->
+<main class="main-content">
+  <div class="page-header">
+    <div>
+      <div class="page-title">⚙️ Settings</div>
+      <div class="page-subtitle">Manage your account, customize themes, and explore version info.</div>
+    </div>
+    <div style="font-size:3rem; animation:bunnyFloat 3s infinite;">🐰</div>
+  </div>
+
+  <div class="settings-grid">
+    <!-- 1. ACCOUNT CARD -->
+    <div class="card">
+      <div class="settings-card-header">
+        <span class="settings-card-icon">👤</span>
+        <span class="settings-card-title">User Account</span>
+      </div>
+      <div class="settings-user-info">
+        <div class="settings-user-avatar" id="detailsAvatar">{{ user[0].upper() }}</div>
+        <div class="settings-user-details">
+          <div class="settings-user-name" id="detailsName">{{ user }}</div>
+          <div class="settings-user-email">{{ email }}</div>
+          <div style="margin-top: 8px; display: flex; gap: 14px; font-size: 0.85rem; font-weight: 700; color: var(--text-soft);">
+            <span>Level: <span id="detailsGrade" style="color: var(--purple-deep);">Seedling 🌱</span></span>
+            <span>XP: <span id="detailsXP" style="color: var(--pink-deep);">0</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. THEMES CARD -->
+    <div class="card">
+      <div class="settings-card-header">
+        <span class="settings-card-icon">🎨</span>
+        <span class="settings-card-title">Workspace Themes</span>
+      </div>
+      <p style="font-size: 0.9rem; color: var(--text-soft); font-weight: 600; margin-bottom: 12px;">
+        Pick a workspace theme to fit your focus style. The changes apply instantly and persist across all pages.
+      </p>
+      
+      <div class="theme-options">
+        <!-- 1. Lavender Mist (Default) -->
+        <button class="theme-option-btn active" id="theme-btn-default" onclick="selectTheme('default')">
+          <span style="font-size: 1.5rem;">🌸</span>
+          <span style="font-weight: 800; font-size: 0.9rem;">Lavender Mist</span>
+          <div class="theme-preview-colors">
+            <div class="theme-dot" style="background: #C9B8FF;"></div>
+            <div class="theme-dot" style="background: #FFB3C6;"></div>
+            <div class="theme-dot" style="background: #FDF7FF;"></div>
+          </div>
+        </button>
+
+        <!-- 2. Midnight Focus (Dark) -->
+        <button class="theme-option-btn" id="theme-btn-dark" onclick="selectTheme('dark')">
+          <span style="font-size: 1.5rem;">🌙</span>
+          <span style="font-weight: 800; font-size: 0.9rem;">Midnight Focus</span>
+          <div class="theme-preview-colors">
+            <div class="theme-dot" style="background: #9D87F5;"></div>
+            <div class="theme-dot" style="background: #FF85A1;"></div>
+            <div class="theme-dot" style="background: #0a0516;"></div>
+          </div>
+        </button>
+
+        <!-- 3. Peach Sunset (Warm) -->
+        <button class="theme-option-btn" id="theme-btn-peach" onclick="selectTheme('peach')">
+          <span style="font-size: 1.5rem;">🍑</span>
+          <span style="font-weight: 800; font-size: 0.9rem;">Peach Sunset</span>
+          <div class="theme-preview-colors">
+            <div class="theme-dot" style="background: #FFB4A2;"></div>
+            <div class="theme-dot" style="background: #FFCAD4;"></div>
+            <div class="theme-dot" style="background: #FFF7F2;"></div>
+          </div>
+        </button>
+
+        <!-- 4. Forest Mint (Fresh) -->
+        <button class="theme-option-btn" id="theme-btn-mint" onclick="selectTheme('mint')">
+          <span style="font-size: 1.5rem;">🍃</span>
+          <span style="font-weight: 800; font-size: 0.9rem;">Forest Mint</span>
+          <div class="theme-preview-colors">
+            <div class="theme-dot" style="background: #1E7A52;"></div>
+            <div class="theme-dot" style="background: #B5EAD7;"></div>
+            <div class="theme-dot" style="background: #F0FFF9;"></div>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. ABOUT CARD -->
+    <div class="card">
+      <div class="settings-card-header">
+        <span class="settings-card-icon">ℹ️</span>
+        <span class="settings-card-title">About FocusYou</span>
+      </div>
+      <div class="about-item">
+        <div class="about-label">Application</div>
+        <div class="about-value">FocusYou — Personal Study Assistant & Productivity Suite</div>
+      </div>
+      <div class="about-item">
+        <div class="about-label">Version</div>
+        <div class="about-value">1.0.0 (Stable Release)</div>
+      </div>
+      <div class="about-item">
+        <div class="about-label">Key Features</div>
+        <div class="about-value">
+          • Pomodoro & 52/17 Deep Work Timers<br/>
+          • Active Recall Flashcards & Feynman Study technique steps<br/>
+          • Spaced Repetition reviews (scheduled via SM-2 algorithm)<br/>
+          • Syllabus uploading, scheduling, and AI plan generation<br/>
+          • Global Webcam Face-Detection Focus Monitor (CV-powered)
+        </div>
+      </div>
+      <div class="about-item">
+        <div class="about-label">Developer info</div>
+        <div class="about-value">Built with Flask & SQLite. Focus helper for student success. ✨</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Shared Stats JS -->
+<script src="{{ url_for('static', filename='fy_stats.js') }}?v=1.0.4"></script>
+<script>
+  // Mobile Sidebar Toggle
+  document.getElementById("menuToggle").onclick = () => {
+    document.getElementById("sidebar").classList.toggle("open");
+    document.getElementById("overlay").classList.toggle("open");
+  };
+  document.getElementById("overlay").onclick = () => {
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("overlay").classList.remove("open");
+  };
+
+  // Toast Notifier
+  function showToast(msg, emoji = "✨") {
+    const c = document.getElementById("toastContainer");
+    if (!c) return;
+    const t = document.createElement("div");
+    t.className = "toast";
+    t.innerHTML = `${emoji} ${msg}`;
+    c.appendChild(t);
+    setTimeout(() => {
+      t.style.opacity = '0';
+      t.style.transition = '.4s';
+      setTimeout(() => t.remove(), 400);
+    }, 3500);
+  }
+
+  // Load User details from shared stats engine
+  window.addEventListener('DOMContentLoaded', () => {
+    const stats = fyLoadStats();
+    const xpVal = stats.xp || 0;
+    const grade = fyGetGrade(xpVal);
+    document.getElementById("detailsXP").textContent = xpVal;
+    document.getElementById("detailsGrade").textContent = grade.name;
+
+    // Set active button for current theme
+    const activeTheme = localStorage.getItem('fy_theme') || 'default';
+    document.querySelectorAll('.theme-option-btn').forEach(btn => btn.classList.remove('active'));
+    const targetBtn = document.getElementById('theme-btn-' + activeTheme);
+    if (targetBtn) targetBtn.classList.add('active');
+  });
+
+  // Select Theme handler
+  function selectTheme(themeName) {
+    // Persist choice
+    localStorage.setItem('fy_theme', themeName);
+
+    // Apply class on document element
+    if (themeName === 'default') {
+      document.documentElement.className = '';
+    } else {
+      document.documentElement.className = 'theme-' + themeName;
+    }
+
+    // Set active button
+    document.querySelectorAll('.theme-option-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('theme-btn-' + themeName).classList.add('active');
+
+    // Notify user
+    showToast(`Theme changed to ${themeName.charAt(0).toUpperCase() + themeName.slice(1)}!`, '🎨');
+  }
+</script>
+
+{% include 'ai_monitor.html' %}
+</body>
+</html>

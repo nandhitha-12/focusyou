@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FocusYou Main</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>FocusYou</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static',
+          filename='style.css') }}">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
+          rel="stylesheet">
+</head>
+
+<body class="main-body">
+
+<!-- SIDEBAR -->
+
+<div class="sidebar">
+
+    <div class="logo">
+        🐰 FocusYou
+    </div>
+
+   <ul>
+
+    <a href="/main">
+        <li>🏠 Dashboard</li>
+    </a>
+
+    <a href="/study">
+        <li>📚 Study Room</li>
+    </a>
+
+    <a href="/streak">
+        <li>🔥 Daily Streak</li>
+    </a>
+
+    <a href="/xp">
+        <li>⭐ XP Rewards</li>
+    </a>
+
+    <a href="/bunny">
+        <li>🐰 Bunny Care</li>
+    </a>
+
+</ul>
+
+</div>
+
+<!-- MAIN CONTENT -->
+
+<div class="main-content">
+
+    <!-- TOP BAR -->
+
+    <div class="topbar">
+
+        <h2>
+            Welcome back, {{ user }} ✨
+        </h2>
+
+        <div class="profile">
+            🐰
+        </div>
+
+    </div>
+
+    <!-- CARDS -->
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>📚 Study Sessions</h3>
+            <p>Track your focused study time.</p>
+        </div>
+
+        <div class="card">
+            <h3>🔥 Daily Streak</h3>
+            <p>Stay consistent every day.</p>
+        </div>
+
+        <div class="card">
+            <h3>⭐ XP Points</h3>
+            <p>Earn rewards while learning.</p>
+        </div>
+
+        <div class="card">
+            <h3>🐰 Bunny Mood</h3>
+            <p>Your bunny reacts to progress.</p>
+        </div>
+
+    </div>
+<!-- CHATBOT BUTTON -->
+
+<div class="chatbot-icon"
+     onclick="toggleChat()">
+
+     🐰
+
+</div>
+
+<!-- CHATBOT WINDOW -->
+
+<div class="chat-container"
+     id="chatContainer">
+
+    <div class="chat-header">
+
+        Focus Bunny 🐰
+
+    </div>
+
+    <div class="chat-body"
+         id="chatBody">
+
+        <div class="bot-message">
+            Hii! I'm your study bunny ✨
+        </div>
+
+    </div>
+
+    <div class="chat-input-area">
+
+        <input type="text"
+               id="userInput"
+               placeholder="Ask something...">
+
+        <button onclick="sendMessage()">
+            Send
+        </button>
+
+    </div>
+
+</div>
+
+
+</div>
+
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+
+{% include 'ai_monitor.html' %}
+</body>
+</html>
+

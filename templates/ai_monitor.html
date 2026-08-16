@@ -1,0 +1,61 @@
+<!-- ══ GLOBAL AI FOCUS MONITOR PANEL ══ -->
+<!-- Include at the bottom of <body> on every page -->
+
+<!-- Alarm Banner (injected dynamically by ai_monitor.js if not present) -->
+<div class="fy-alarm-banner" id="fyAlarmBanner" style="display:none;">
+  <span id="fyAlarmMsg"></span>
+  <button onclick="monDismissAlarm()">✕ Dismiss</button>
+</div>
+
+<!-- Toast Container -->
+<div class="fy-toast-container" id="fyToastContainer"></div>
+
+<!-- Monitor Panel -->
+<div class="mon-panel" id="monitorPanel" style="display:none;">
+  <div class="mon-header">
+    <span>👁️ AI Focus Monitor</span>
+    <div class="mon-hbtns">
+      <span id="monBadge">OFF</span>
+      <button class="mon-hbtn" onclick="monMinimize()" id="monMinBtn" title="Minimize">—</button>
+      <button class="mon-hbtn" onclick="document.getElementById('monitorPanel').style.display='none';document.getElementById('monFab').textContent='👁️ AI Monitor';document.getElementById('monFab').classList.remove('active');" title="Close">✕</button>
+    </div>
+  </div>
+  <div class="mon-video-wrap" id="monVideoWrap">
+    <video id="monitorVideo" autoplay muted playsinline></video>
+    <canvas id="monitorCanvas"></canvas>
+    <div id="noFaceOverlay">
+      <span style="font-size:2rem;">👀</span>
+      <span>No face detected!</span>
+    </div>
+  </div>
+  <div class="mon-status">
+    <div class="mon-dot idle" id="monDot"></div>
+    <span id="monStatusTxt" style="color:#B0A0CC;">Camera Off</span>
+    <span id="monTimer">—</span>
+  </div>
+  <div class="mon-msg" id="monMsg"><span class="mon-coach-label">🎓 Coach:</span> Enable monitoring and I'll watch your focus like a teacher! 📚</div>
+  <div class="mon-stats" id="monStats">
+    <div class="mon-stat"><span id="msFocusSec">0m</span>Focused</div>
+    <div class="mon-stat"><span id="msAwaySec">0s</span>Away</div>
+    <div class="mon-stat"><span id="msAlerts">0</span>Alerts</div>
+  </div>
+  <div class="mon-voice-row">
+    <span class="mon-voice-label">🔊 Voice Alerts</span>
+    <label class="fy-switch">
+      <input type="checkbox" id="monVoiceToggle" onchange="FocusVoice.toggle(this.checked)" checked>
+      <span class="fy-slider"></span>
+    </label>
+  </div>
+  <button class="mon-enable-btn" id="monEnableBtn" onclick="toggleMonitoring()">📷 Enable AI Monitoring</button>
+</div>
+
+<!-- Floating Action Button -->
+<button class="mon-fab" id="monFab" onclick="toggleMonPanel()">👁️ AI Monitor</button>
+
+<!-- Voice Integration -->
+<script src="{{ url_for('static', filename='voice.js') }}?v=1.0.1"></script>
+<!-- Global Monitor Script -->
+<script src="{{ url_for('static', filename='ai_monitor.js') }}?v=1.0.4"></script>
+<!-- Global SPA Routing and Timer Logic -->
+<script src="{{ url_for('static', filename='timer.js') }}?v=1.0.5"></script>
+<script src="{{ url_for('static', filename='pjax.js') }}?v=1.0.0"></script>
