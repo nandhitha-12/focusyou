@@ -6,7 +6,7 @@
    - History items are clickable and restore chat
 ═══════════════════════════════════════════════════ */
 
-const GROQ_API_KEY = "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";
+const GROQ_API_KEY = "";
 const GROQ_URL     = "https://api.groq.com/openai/v1/chat/completions";
 
 let isSending      = false;

@@ -175,7 +175,7 @@ function bunnyReact(){
 }
 
 // ── Quick Ask AI (calls Groq directly from browser) ──
-const GROQ_KEY = "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";
+const GROQ_API_KEY = "";
 
 function setQ(text){
   const i=document.getElementById("quickInput");
